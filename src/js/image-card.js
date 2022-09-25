@@ -7,41 +7,45 @@ const refs = {
   formEl: document.querySelector('#search-form'),
   inputEl: document.querySelector('#search-form > input'),
   galleryContainer: document.querySelector('.gallery'),
-  observerEl: document.querySelector('.sentinel'),
+  reviewerEl: document.querySelector('.reviewer'),
 };
 
 refs.formEl.addEventListener('submit', onFormSubmit);
-refs.galleryContainer.addEventListener('click', onGalleryContainerClick);
+refs.galleryContainer.addEventListener('click', onGalleryClick);
 
 function onFormSubmit(event) {
   event.preventDefault();
   searchPicturers();
 }
 
+function onGalleryClick(event) {
+  event.preventDefault();
+}
+
 const picturesSerchAPI = new PicturesAPI();
 
-// search function
+// Поиск
 function searchPicturers() {
   if (!refs.inputEl.value.trim()) {
     return;
   }
   picturesSerchAPI.query = refs.inputEl.value.trim();
 
-  observer.observe(refs.observerEl);
+  reviewer.observe(refs.reviewerEl);
 
   picturesSerchAPI.resetPage();
   clearMurkup();
 
   if (picturesSerchAPI.query) {
     picturesSerchAPI
-      .fetchPictures(picturesSerchAPI.query)
+      .fetchPhotos(picturesSerchAPI.query)
       .then(data => {
         if (!data.hits.length) {
           Notify.failure(
             'Sorry, there are no images matching your search query. Please try again.',
             {
               position: 'right-top',
-              fontSize: '12px',
+              fontSize: '20px',
             }
           );
           return;
@@ -51,27 +55,28 @@ function searchPicturers() {
         const totalResults = data.totalHits;
         Notify.success(`Hooray! We found ${totalResults} images.`, {
           position: 'right-top',
-          fontSize: '14px',
+          fontSize: '25px',
         });
       })
 
-      .catch(onFetchError);
+      .catch(Error);
   }
 }
 
-function onFetchError() {
+function Error() {
   error => {
     Notify.failure(
       'Sorry, there are no images matching your search query. Please try again.',
       {
         position: 'right-top',
-        fontSize: '12px',
+        fontSize: '20px',
       }
     );
   };
 }
 
-// markup functions
+// Оформление
+
 function appendImagesMarkup(data) {
   refs.galleryContainer.insertAdjacentHTML(
     'beforeend',
@@ -116,26 +121,18 @@ function clearMurkup() {
   refs.galleryContainer.innerHTML = '';
 }
 
-// click event function
-function onGalleryContainerClick(event) {
-  event.preventDefault();
-}
-
-// simpleLightbox
 var lightbox = new SimpleLightbox('.gallery a', {
-  //   options
   captionDelay: 250,
   captionSelector: 'img',
   captionsData: 'alt',
 });
 
-// intersection observer
 const onEntry = entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting && entry.boundingClientRect.bottom > 300) {
       picturesSerchAPI.icrementPage();
 
-      picturesSerchAPI.fetchPictures().then(images => {
+      picturesSerchAPI.fetchPhotos().then(images => {
         appendImagesMarkup(images);
         lightbox.refresh();
       });
@@ -143,6 +140,6 @@ const onEntry = entries => {
   });
 };
 
-const observer = new IntersectionObserver(onEntry, {
+const reviewer = new IntersectionObserver(onEntry, {
   rootMargin: '150px',
 });
