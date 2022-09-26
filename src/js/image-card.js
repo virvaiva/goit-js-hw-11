@@ -104,7 +104,7 @@ const onEntry = entries => {
     if (entry.isIntersecting && entry.boundingClientRect.bottom > 300) {
       picturesSerchAPI.icrementPage();
       if (PicturesAPI.pages === totalPages) {
-        return;
+        reviewer.unobserve();
       }
       picturesSerchAPI.fetchPhotos().then(images => {
         appendImagesMarkup(images);
