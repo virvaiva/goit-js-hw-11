@@ -23,6 +23,10 @@ export default class PixabayAPI {
     this.page = 1;
   }
 
+  get currentpage() {
+    return this.page;
+  }
+
   get query() {
     return this.searchQuery;
   }

@@ -62,7 +62,7 @@ body {
 }
 .gallery__item:hover {
   transform: translateX(10px) rotate(10deg) translateY(5px);
-  z-index: 100;
+  z-index: 40;
 }
 
 .gallery__image {

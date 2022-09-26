@@ -2,6 +2,7 @@ import PicturesAPI from './pixabayApi';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { createImagesMarkup } from './markup.js';
 
 const refs = {
   formEl: document.querySelector('#search-form'),
@@ -9,6 +10,8 @@ const refs = {
   galleryContainer: document.querySelector('.gallery'),
   reviewerEl: document.querySelector('.reviewer'),
 };
+
+let totalPages = 0;
 
 refs.formEl.addEventListener('submit', onFormSubmit);
 refs.galleryContainer.addEventListener('click', onGalleryClick);
@@ -41,10 +44,11 @@ function searchPicturers() {
       .fetchPhotos(picturesSerchAPI.query)
       .then(data => {
         if (!data.hits.length) {
+          totalPages = Math.ceil(totalResults / 40);
           Notify.failure(
             'Sorry, there are no images matching your search query. Please try again.',
             {
-              position: 'center',
+              position: 'left-top',
               fontSize: '20px',
             }
           );
@@ -85,38 +89,6 @@ function appendImagesMarkup(data) {
   lightbox.refresh();
 }
 
-function createImagesMarkup(image) {
-  return image
-    .map(
-      ({
-        largeImageURL,
-        webformatURL,
-        tags,
-        likes,
-        views,
-        comments,
-        downloads,
-      }) => {
-        return `<a
-        class="gallery__item"
-        target="_self"
-        rel="nofollow, noreferrer"
-        title="Click to enlarge"
-        loading="lazy"
-        href="${largeImageURL}">
-          <img class="gallery__image" src="${webformatURL}" alt="${tags}"/>
-          <div class="gallery__descr">
-            <p class="gallery__features">likes:<span class="gallery__values"> ${likes}</span></p>
-            <p class="gallery__features">views:<span class="gallery__values"> ${views}</span></p>
-            <p class="gallery__features">comments:<span class="gallery__values"> ${comments}</span></p>
-            <p class="gallery__features">downloads:<span class="gallery__values"> ${downloads}</span></p>
-          </div>
-        </a>`;
-      }
-    )
-    .join('');
-}
-
 function clearMurkup() {
   refs.galleryContainer.innerHTML = '';
 }
@@ -131,7 +103,8 @@ const onEntry = entries => {
   entries.forEach(entry => {
     if (entry.isIntersecting && entry.boundingClientRect.bottom > 300) {
       picturesSerchAPI.icrementPage();
-
+      if (PicturesAPI.pages === totalPages) {
+      }
       picturesSerchAPI.fetchPhotos().then(images => {
         appendImagesMarkup(images);
         lightbox.refresh();
