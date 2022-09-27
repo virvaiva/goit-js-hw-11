@@ -27,14 +27,13 @@ function onGalleryClick(event) {
 
 const picturesSerchAPI = new PicturesAPI();
 
-// Поиск
+// Пошук
+
 function searchPicturers() {
   if (!refs.inputEl.value.trim()) {
-    return;
+    Notify.warning('Please enter a query');
   }
   picturesSerchAPI.query = refs.inputEl.value.trim();
-
-  reviewer.observe(refs.reviewerEl);
 
   picturesSerchAPI.resetPage();
   clearMurkup();
@@ -44,7 +43,6 @@ function searchPicturers() {
       .fetchPhotos(picturesSerchAPI.query)
       .then(data => {
         if (!data.hits.length) {
-          totalPages = Math.ceil(totalResults / 40);
           Notify.failure(
             'Sorry, there are no images matching your search query. Please try again.',
             {
@@ -57,10 +55,14 @@ function searchPicturers() {
 
         appendImagesMarkup(data);
         const totalResults = data.totalHits;
+        totalPages = Math.ceil(totalResults / 40);
         Notify.success(`Hooray! We found ${totalResults} images.`, {
           position: 'right-top',
           fontSize: '25px',
         });
+        if (PicturesAPI.pages === totalPages) {
+          reviewer.unobserve(refs.reviewerEl);
+        }
       })
 
       .catch(Error);
@@ -104,7 +106,7 @@ const onEntry = entries => {
     if (entry.isIntersecting && entry.boundingClientRect.bottom > 300) {
       picturesSerchAPI.icrementPage();
       if (PicturesAPI.pages === totalPages) {
-        reviewer.unobserve();
+        reviewer.unobserve(refs.reviewerEl);
       }
       picturesSerchAPI.fetchPhotos().then(images => {
         appendImagesMarkup(images);
