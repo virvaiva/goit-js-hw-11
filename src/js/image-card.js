@@ -37,6 +37,7 @@ function searchPicturers() {
 
   picturesSerchAPI.resetPage();
   clearMurkup();
+  reviewer.observe(refs.reviewerEl);
 
   if (picturesSerchAPI.query) {
     picturesSerchAPI
